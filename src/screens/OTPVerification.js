@@ -45,7 +45,7 @@ const OTPVerification = ({route}) => {
         // Handle the API response here
       })
       .catch(error => console.log('error', error));
-    navigation.navigate('Signin');
+    // navigation.navigate('Signin');
   };
 
   return (

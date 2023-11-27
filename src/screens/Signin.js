@@ -218,6 +218,7 @@ import {
   GoogleSignin,
   statusCodes,
 } from '@react-native-google-signin/google-signin';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Signin = () => {
   const [email, setEmail] = useState('');
@@ -228,36 +229,71 @@ const Signin = () => {
   const [mobileNumber, setMobileNumber] = useState('');
   const [otpResponse, setOtpResponse] = useState(null);
   const [error, setError] = useState(null);
-  const handleRegistration = () => {
-    axios
-      .post(
-        'https://alharamstores.com/rest/arabic/V1/api/mobileOtpRegistrationMethod',
-        {
-          mobile: '', // Replace with the user's mobile number
-          password: '', // Replace with the user's desired password
-          firstname: '',
-          lastname: '',
-          email: email,
-          otptype: 'login',
-          store_id: '1',
-          auth: '74125896322323',
-          resend: '',
-        },
-      )
-      .then(response => {
-        console.log(response.data);
-        // Handle the API response here (e.g., navigate to the next screen, show a success message)
-        // For example, if the API response indicates success, navigate to the login screen:
-        navigation.navigate('Home', {
-          email: email, // Pass the email to the home screen
-          firstname: '', // Pass the first name to the home screen
-          lastname: '', // Pass the last name to the home screen
+  const [passwordVisibility, setPasswordVisibility] = useState(true)
+
+  const storeData = async (userInfo) => {
+    try {
+      await AsyncStorage.setItem('userInfo', JSON.stringify(userInfo));
+      navigation.replace("Home", userInfo)
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleRegistration = async => {
+    try {
+      const FormData = require('form-data');
+      let data = new FormData();
+      data.append('username', email);
+      data.append('password', password);
+      data.append('store_id', '1');
+
+      let config = {
+        method: 'post',
+        url: 'https://alharamstores.com//rest/V1/api/loginUser',
+        data: data,
+      };
+
+      axios
+        .request(config)
+        .then(response => {
+          if (response.data.message === 'Login successfully.') {
+            storeData(response.data.data)
+          }
+        })
+        .catch(error => {
+          console.log(error);
         });
-      })
-      .catch(error => {
-        console.error(error);
-        // Handle errors (e.g., show an error message to the user)
-      });
+    } catch (error) {}
+    // axios
+    //   .post(
+    //     'https://alharamstores.com/rest/arabic/V1/api/mobileOtpRegistrationMethod',
+    //     {
+    //       mobile: '', // Replace with the user's mobile number
+    //       password: '', // Replace with the user's desired password
+    //       firstname: '',
+    //       lastname: '',
+    //       email: email,
+    //       otptype: 'login',
+    //       store_id: '1',
+    //       auth: '74125896322323',
+    //       resend: '',
+    //     },
+    //   )
+    //   .then(response => {
+    //     console.log(response.data);
+    //     // Handle the API response here (e.g., navigate to the next screen, show a success message)
+    //     // For example, if the API response indicates success, navigate to the login screen:
+    //     navigation.navigate('Home', {
+    //       email: email, // Pass the email to the home screen
+    //       firstname: '', // Pass the first name to the home screen
+    //       lastname: '', // Pass the last name to the home screen
+    //     });
+    //   })
+    //   .catch(error => {
+    //     console.error(error);
+    //     // Handle errors (e.g., show an error message to the user)
+    //   });
   };
 
   const handleApiCall = async ({navigation}) => {
@@ -354,10 +390,10 @@ const Signin = () => {
           <View style={styles.inputContainer}>
             <Image
               source={require('../assets/iconEmail.png')}
-              style={styles.icon}
+              style={[styles.icon, {marginLeft:15}]}
             />
             <TextInput
-              style={[styles.input, {color:'black'}]}
+              style={[styles.input, {color: 'black'}]}
               placeholder="Email"
               keyboardType="email-address"
               autoCapitalize="none"
@@ -370,16 +406,28 @@ const Signin = () => {
           <View style={styles.inputContainer}>
             <Image
               source={require('../assets/iconPassword.png')}
-              style={styles.icon}
+              style={[styles.icon, {marginLeft:15}]}
             />
             <TextInput
-             style={[styles.input, {color:'black'}]}
+              style={[styles.input, {color: 'black'}]}
               onChangeText={text => setPassword(text)}
               value={password}
-              secureTextEntry
+              secureTextEntry={passwordVisibility}
               placeholder="Password"
               placeholderTextColor={'black'}
             />
+            <TouchableOpacity
+            onPress={() => setPasswordVisibility(!passwordVisibility)}
+            >
+            <Image 
+              source={{uri : "https://cdn-icons-png.flaticon.com/128/3257/3257787.png"}}
+              style={[styles.icon, {
+                justifyContent:'flex-end',
+                tintColor:passwordVisibility ?  '#8b0000' : '#9ADE7B'
+              }]}
+              
+            />
+          </TouchableOpacity>
           </View>
           <TouchableOpacity onPress={() => alert('Forgot Password pressed')}>
             <Text style={{alignSelf: 'flex-end'}}>Forgot Password?</Text>
@@ -411,7 +459,7 @@ const Signin = () => {
               style={styles.icon}
             />
             <TextInput
-              style={[styles.input, {color:'black'}]}
+              style={[styles.input, {color: 'black'}]}
               placeholder="Mobile number"
               keyboardType="phone-pad"
               value={mobileNumber}
@@ -607,7 +655,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    marginHorizontal:10
+    marginHorizontal: 10,
   },
   selectedTab: {
     borderBottomWidth: 2,
@@ -616,20 +664,8 @@ const styles = StyleSheet.create({
   tabText: {
     color: 'black',
     fontSize: 17,
-   
   },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderBottomWidth: 1, // Border Bottom Width for the underline
-    borderBottomColor: 'lightgray', // Border Bottom Color
-    paddingHorizontal: 30,
-    marginBottom: 60,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 20,
-    marginVertical: 30,
-  },
-
+ 
   icon: {
     width: 20,
     height: 20,
@@ -649,7 +685,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderBottomWidth: 1, // Border Bottom Width for the underline
     borderBottomColor: 'lightgray', // Border Bottom Color
-    paddingHorizontal: 15,
+    // paddingHorizontal: 15,
     marginBottom: 20,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,

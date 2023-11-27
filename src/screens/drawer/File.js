@@ -27,7 +27,7 @@ const YourComponent = ({route}) => {
     } else {
       // If the user is not logged in, navigate to the login screen
       //navigation.navigate('Login');
-      navigation.navigate('Signin');
+      // navigation.navigate('Signin');
     }
   };
   const handleHomePress = () => {

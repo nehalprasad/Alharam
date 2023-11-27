@@ -801,17 +801,33 @@
 // });
 
 // export default YourComponent;
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const HomeScreen = ({ route }) => {
-  const { email, firstname, lastname } = route.params;
+const HomeScreen = ({route}) => {
+  const [userInfo, setUserInfo] = useState("")
+
+ useEffect(() => {
+  console.log(route.params, "params");
+  getData()
+ },[route])
+
+ const getData = async () => {
+  try {
+    const userInfo = await AsyncStorage.getItem('userInfo');
+    console.log(JSON.parse(userInfo),"userInfos");
+    setUserInfo(JSON.parse(userInfo))
+  } catch (e) {
+    // error reading value
+  }
+}
 
   return (
     <View>
       <Text></Text>
-      <Text>Email: {email}</Text>
-      {/* Other content of your Home screen */}
+      <Text style={{color:'black'}}>{JSON.stringify(userInfo)}</Text>
+
     </View>
   );
 };

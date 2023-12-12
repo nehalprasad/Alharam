@@ -1,0 +1,206 @@
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import FormData from 'react-native/Libraries/Network/FormData';
+import { View, Text, FlatList,TouchableOpacity,Image } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+const ApiCallComponent = () => {
+  const [apiResponses, setApiResponses] = useState([]);
+  const [userId, setuserId] = useState(null);
+  const getData = async () => {
+    try {
+      const userId = await AsyncStorage.getItem('userId', userId);
+      setuserId(userId);
+      console.log("userId-------------------", userId);
+      // setUserInfo(JSON.parse(userInfo))?
+    } catch (e) {
+      // error reading value
+      console.error('Error reading user information:', e);
+    }
+  }
+  useEffect(() => {
+    getData()
+  }, [])
+  const makeApiCalldelete = async (selectedItemId) => {
+    try {
+      const myHeaders = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer f3mun3f3n7as17s1dghke0fqa8dxz564',
+        'Cookie': 'PHPSESSID=e3de3b180366579542368db9693ac14a; private_content_version=806b89d4f4da5cb5a7db2b597aeb71c1',
+      };
+      const data = {
+        address_id: selectedItemId,
+        customer_id: userId,
+        store_id: '1',
+      };
+      const response = await axios.post(
+        'https://alharamstores.com/rest/default/V1/api/customerAddressDeleteMethod',
+        data,
+        { headers: myHeaders }
+      );
+  
+      console.log("id", selectedItemId);
+      console.log(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  makeApiCalldelete();
+  useEffect(() => {
+    const makeApiCall = async () => {
+      try {
+        let data = new FormData();
+        data.append('customer_id', '58755');
+        data.append('firstname', 'test');
+        data.append('lastname', 'sdfsdf');
+        data.append('country_id', 'SA');
+        data.append('region', '702');
+        data.append('city', 'Jeddah');
+        data.append('address1', 'dsfsdf');
+        data.append('address2', 'dsfsdf');
+        data.append('address3', 'dsfsdf');
+        data.append('postcode', '');
+        data.append('telephone', '823815546');
+        data.append('set_is_default_billing', '1');
+        data.append('set_is_default_shipping', '1');
+        data.append('store_id', '1');
+        data.append('address_id', '927');
+        let config = {
+          method: 'post',
+          url: 'https://alharamstores.com/rest/default/V1/api/customerAddressListMethod',
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'Authorization': 'Bearer f3mun3f3n7as17s1dghke0fqa8dxz564',
+            'Cookie': 'PHPSESSID=e3de3b180366579542368db9693ac14a; private_content_version=806b89d4f4da5cb5a7db2b597aeb71c1',
+          },
+          data: data,
+        };
+        const response = await axios.request(config);
+        setApiResponses(response.data.data);
+        // Log the entire response
+        console.log('responce 0', response.data.data[0]);
+        console.log('responce 1:', response.data.data[1]);
+        console.log('responce 2:', response.data.data[2]);
+        //setapiResponse(response.data.data[0])
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    makeApiCall();
+  }, []);
+  const handleDelete = (selectedItemId) => {
+    console.log('Selected Item ID:', selectedItemId);
+    makeApiCalldelete(selectedItemId);
+    // You can also put additional logic here if needed
+  };
+  const renderItem = ({ item }) => (
+    <View>
+      <View>
+        <View
+  style={{
+    backgroundColor: '#f4f3f9',
+    width: '90%',
+    alignSelf: 'center',
+    marginVertical: 10,
+    borderRadius: 5,
+    borderColor: '#cfccd2',
+    borderWidth: 1,
+  }}
+>
+  <View style={{ padding: 10 }}>
+    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+      <Text style={{ fontSize: 17, color: '#05040a' }}>
+        {item.firstname} {item.lastname}
+      </Text>
+      <View style={{ flexDirection: 'row' }}>
+        <TouchableOpacity onPress={() => handleDelete(item.id)}
+        >
+        <View>
+          <Icon name="delete-circle" size={30} color="red" />
+        </View>
+        </TouchableOpacity>  
+        <View style={{ paddingLeft: 10 }}>
+          <Icon name="circle-edit-outline" size={30} color="red" />
+        </View>
+      </View>
+    </View>
+    <View style={{ marginTop: 5 }}>
+      <Text style={{ fontSize: 15, color: '#87878c' }}>
+        {item.street},{item.address1}
+      </Text>
+      <Text style={{ fontSize: 15, color: '#87878c' }}>
+        {item.address2} {item.city}
+      </Text>
+      <Text style={{ fontSize: 15, color: '#87878c' }}>
+        {item.region.region},{item.country_name}
+      </Text>
+      <Text style={{ fontSize: 15, color: '#87878c' }}>
+        T:+{item.telephone}
+      </Text>
+    </View>
+  </View>
+</View>
+      </View>
+    </View>
+
+  );
+  return (
+    <View style={{backgroundColor:"#fff"}}>
+      <View style={{ backgroundColor:"#fff", 
+        justifyContent:"space-between",
+        flexDirection:"row",
+        paddingVertical:5}}>
+   <TouchableOpacity style={{ flexDirection: 'row',
+        marginLeft:10}} >
+      <Image
+        source={require('../assets/iconBack.png')}
+        style={{width: 20,
+          height: 30,
+          resizeMode: 'contain',}}
+      />   
+    </TouchableOpacity>
+    <Text style={{ fontSize: 18,
+        color: 'black',
+        fontWeight: '900',
+        marginRight:140}}>AddressBook</Text>
+    </View>
+     <View style={{flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 1,
+    borderRadius: 0,
+    padding: 5,
+    width: "100%",
+    backgroundColor: "#fff"}}>
+        <Image
+        source={require('../assets/iconShippingAddress.png')}
+        style={{width: 20,
+          height: 30,
+          resizeMode: 'contain',}}
+      />
+          <Text style={{color: 'gray',
+    fontSize: 18,
+    textAlign: 'center',
+    fontWeight: "200"}}>Default Billing</Text>
+       <Image
+        source={require('../assets/iconShippingAddress.png')}
+        style={{width: 20,
+          height: 30,
+          resizeMode: 'contain',}}
+      />      
+          <Text style={{color: 'gray',
+    fontSize: 20,
+    textAlign: 'center',
+    fontWeight: "200"}}>Default Shipping</Text>
+      </View>
+      <FlatList
+        data={apiResponses}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id.toString()}
+      />
+    </View>
+  );
+};
+export default ApiCallComponent;
+
+
+
